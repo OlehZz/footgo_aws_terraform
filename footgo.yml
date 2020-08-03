@@ -1,0 +1,34 @@
+---
+- hosts: ip-10-0-1-112.ec2.internal
+  become: yes
+
+  tasks:
+    - name: install git
+      apt:
+        name: git
+        update_cache: yes
+        state: latest
+
+    - name: install maven
+      apt:
+        name: maven
+        state: latest
+    - name: setup files
+      git:
+        repo: 'https://github.com/WiseHands/FootGo.git'
+        version: 'release/1.0.0'
+        dest: /home/ubuntu/footgo
+    - name: setup db access
+      script: script.sh
+    - name: compile footgo app
+      shell: mvn clean package
+      args:
+        chdir: /home/ubuntu/footgo
+        executable: /bin/bash
+      environment:
+        MAVEN_OPTS: "-Xmx1024m"
+        MAVEN_HOME: /usr/share/maven
+        JAVA_HOME: /usr/lib/jvm/java-1.11.0-openjdk-amd64
+
+    #- name: run site
+    #  shell: ( ( nohup java -jar /home/ubuntu/footgo/target/ROOT.war </dev/null 1>/dev/null 2>&1 ) &)
